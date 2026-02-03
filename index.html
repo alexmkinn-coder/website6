@@ -7,24 +7,24 @@
         #menu, #game-ui { display: none; }
         .active { display: block !important; }
         
-        .box { border: 2px solid #00ff99; padding: 25px; display: inline-block; margin-top: 30px; box-shadow: 0 0 20px #00ff99; border-radius: 15px; background: #000; min-width: 320px; }
-        h1 { text-shadow: 0 0 10px #00ff99; margin-bottom: 10px; }
+        .box { border: 2px solid #00ff99; padding: 25px; display: inline-block; margin-top: 20px; box-shadow: 0 0 20px #00ff99; border-radius: 15px; background: #000; min-width: 320px; }
+        h1 { text-shadow: 0 0 10px #00ff99; margin-bottom: 5px; }
         
-        .stat-line { font-size: 1.2rem; margin: 10px 0; color: #fff; }
+        .stat-line { font-size: 1.1rem; margin: 5px 0; color: #fff; }
         .high-score { color: #ff0066; font-weight: bold; }
+        .daily-badge { background: #ff0066; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 5px; }
 
-        .settings { border-top: 1px solid #333; margin-top: 15px; padding-top: 15px; text-align: left; }
-        select { background: #222; color: #00ff99; border: 1px solid #00ff99; padding: 5px; width: 100%; margin: 5px 0 15px 0; }
+        .settings { border-top: 1px solid #333; margin-top: 15px; padding-top: 10px; text-align: left; }
+        select { background: #222; color: #00ff99; border: 1px solid #00ff99; padding: 5px; width: 100%; margin: 5px 0 10px 0; }
 
-        button { background: #00ff99; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; font-size: 1.1rem; width: 100%; transition: 0.2s; }
-        button:hover { background: #fff; transform: scale(1.02); }
+        button { background: #00ff99; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; font-size: 1rem; width: 100%; transition: 0.2s; margin-bottom: 10px; }
+        button.daily-btn { background: #ff0066; color: white; border: 2px solid #ff0066; }
+        button:hover { background: #fff; transform: scale(1.02); color: #000; }
         
-        #share-area { margin-top: 20px; padding: 10px; border: 1px dashed #ff0066; display: none; animation: glow 1.5s infinite alternate; }
+        #share-area { margin-top: 15px; padding: 10px; border: 1px dashed #ff0066; display: none; }
         #share-link { color: #ff0066; word-break: break-all; text-decoration: none; font-size: 0.8rem; display: block; margin-top: 5px; }
 
         canvas { border: 3px solid #00ff99; background: #000; box-shadow: 0 0 15px #00ff99; margin-top: 10px; }
-        
-        @keyframes glow { from { box-shadow: 0 0 5px #ff0066; } to { box-shadow: 0 0 15px #ff0066; } }
     </style>
 </head>
 <body>
@@ -34,28 +34,30 @@
             <h1>NEON SNAKE</h1>
             
             <div class="stat-line">All-Time Best: <span id="all-time-high" class="high-score">0</span></div>
-            <div id="incoming-challenge" style="color: #ff0066; font-size: 0.9rem;"></div>
+            <div id="incoming-challenge" style="color: #ff0066; font-size: 0.9rem; margin-bottom: 10px;"></div>
+
+            <button class="daily-btn" onclick="startDailyChallenge()">📅 PLAY DAILY CHALLENGE</button>
+            <div id="daily-info" style="font-size: 0.8rem; margin-bottom: 15px; color: #aaa;">
+                Today's Goal: <span id="daily-goal" style="color:#ff0066">---</span>
+            </div>
 
             <div class="settings">
-                <label>Field Size:</label>
+                <p style="margin: 0; font-size: 0.8rem; color: #00ff99;">CUSTOM GAME:</p>
                 <select id="field-size">
                     <option value="400">Standard (400px)</option>
                     <option value="600">Giant (600px)</option>
                     <option value="300">Small (300px)</option>
                 </select>
-
-                <label>Game Mode:</label>
                 <select id="food-mode">
                     <option value="1">Classic (1 Food)</option>
                     <option value="3">Triple (3 Food)</option>
                     <option value="10">Mayhem (10 Food!)</option>
                 </select>
+                <button onclick="startGame()">START CUSTOM</button>
             </div>
 
-            <button onclick="startGame()">START GAME</button>
-
             <div id="share-area">
-                <span style="color: #ff0066; font-weight: bold;">NEW RECORD! CHALLENGE A FRIEND:</span>
+                <span style="color: #ff0066; font-weight: bold;">SHARE SCORE / CHALLENGE:</span>
                 <a id="share-link" target="_blank"></a>
             </div>
         </div>
@@ -75,29 +77,47 @@
         let score = 0;
         let gridSize = 20;
         let snake, dx, dy, foods = [], foodCount;
+        let isDaily = false;
 
-        // LOAD ALL-TIME HIGH ON START
         window.onload = () => {
+            // Load High Score
             const savedHigh = localStorage.getItem('snake_all_time') || 0;
             document.getElementById('all-time-high').innerText = savedHigh;
 
+            // Handle URL Challenge
             const urlParams = new URLSearchParams(window.location.search);
             const challengeScore = urlParams.get('challenge');
             if (challengeScore) {
                 document.getElementById('incoming-challenge').innerText = `🔥 Friend Challenge: Beat ${challengeScore}!`;
             }
+
+            // Calculate Daily Goal based on Date
+            const today = new Date();
+            const dateSeed = today.getDate() + today.getMonth() + today.getFullYear();
+            const dailyGoal = (dateSeed % 10) * 50 + 100; // Random looking goal between 100-600
+            document.getElementById('daily-goal').innerText = dailyGoal;
         };
 
+        function startDailyChallenge() {
+            isDaily = true;
+            // Daily challenge locks settings: Standard field, Triple food
+            foodCount = 3;
+            canvas.width = 400;
+            canvas.height = 400;
+            launch();
+        }
+
         function startGame() {
-            const size = parseInt(document.getElementById('field-size').value);
+            isDaily = false;
             foodCount = parseInt(document.getElementById('food-mode').value);
-            
-            canvas.width = size;
-            canvas.height = size;
-            
+            canvas.width = parseInt(document.getElementById('field-size').value);
+            canvas.height = canvas.width;
+            launch();
+        }
+
+        function launch() {
             menu.classList.remove('active');
             gameUI.classList.add('active');
-            
             resetGame();
             gameLoop();
         }
@@ -106,21 +126,16 @@
             score = 0;
             document.getElementById('live-score').innerText = "0";
             snake = [{x: 100, y: 100}, {x: 80, y: 100}, {x: 60, y: 100}];
-            dx = gridSize;
-            dy = 0;
+            dx = gridSize; dy = 0;
             foods = [];
             for(let i=0; i<foodCount; i++) createFood();
         }
 
         function gameLoop() {
             if (didGameEnd()) return gameOver();
-            
             setTimeout(() => {
-                ctx.fillStyle = "black";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                drawFoods();
-                advanceSnake();
-                drawSnake();
+                ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawFoods(); advanceSnake(); drawSnake();
                 gameLoop();
             }, 80);
         }
@@ -128,15 +143,12 @@
         function advanceSnake() {
             const head = {x: snake[0].x + dx, y: snake[0].y + dy};
             snake.unshift(head);
-            
             let ate = false;
             foods.forEach((f, i) => {
                 if (head.x === f.x && head.y === f.y) {
                     score += 10;
                     document.getElementById('live-score').innerText = score;
-                    foods.splice(i, 1);
-                    createFood();
-                    ate = true;
+                    foods.splice(i, 1); createFood(); ate = true;
                 }
             });
             if (!ate) snake.pop();
@@ -172,22 +184,26 @@
             gameUI.classList.remove('active');
             menu.classList.add('active');
 
-            // ALL TIME HIGH LOGIC
             const currentHigh = localStorage.getItem('snake_all_time') || 0;
             if (score > currentHigh) {
                 localStorage.setItem('snake_all_time', score);
                 document.getElementById('all-time-high').innerText = score;
             }
 
-            // CHALLENGE LINK LOGIC
             const baseUrl = "https://alexmkinn-coder.github.io/website6/";
             const shareUrl = `${baseUrl}?challenge=${score}`;
             document.getElementById('share-area').style.display = 'block';
             const linkTag = document.getElementById('share-link');
             linkTag.href = shareUrl;
-            linkTag.innerText = `I got this high score in Snake: ${score}. try it here: ${baseUrl}`;
+            linkTag.innerText = `I got ${score} in Snake! Try beating me: ${baseUrl}`;
 
-            alert("GAME OVER! Score: " + score);
+            if(isDaily) {
+                const goal = parseInt(document.getElementById('daily-goal').innerText);
+                if(score >= goal) alert("🏆 DAILY CHALLENGE COMPLETE!");
+                else alert("Game Over! Try again to hit the daily goal.");
+            } else {
+                alert("GAME OVER! Score: " + score);
+            }
         }
 
         document.addEventListener('keydown', (e) => {

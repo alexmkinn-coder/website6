@@ -1,7 +1,30 @@
-<html>
-<head></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My GitHub Arcade</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<h1>hello and welcome
-<iframe width="560" height="315" scr="<iframe width="560" height="315" src="https://www.youtube.com/embed/W8x4m-qpmJ8?si=Thep9G6_m0Ra_oP_" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>"
+    <header>
+        <h1>Pixel Portal</h1>
+        <p>Hosted securely on GitHub Pages</p>
+    </header>
+
+    <main>
+        <div id="game-container">
+            <iframe id="game-viewport" src="" frameborder="0" allowfullscreen></iframe>
+            <div id="placeholder">Select a game to start playing!</div>
+        </div>
+
+        <nav id="game-list">
+            <h2>Your Library</h2>
+            <button onclick="loadGame('https://play.google.com/google-doodle-gh/2017/cricket.html')">Cricket (Google Demo)</button>
+            <button onclick="loadGame('YOUR_GAME_FOLDER/index.html')">My Custom Game</button>
+            </nav>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>

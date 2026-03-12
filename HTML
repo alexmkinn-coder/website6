@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <h1>Alex Developer</h1>
+    </nav>
+
+    <section id="hero">
+        <h2>Hi, I'm Alex.</h2>
+        <p>Full-stack developer and coffee enthusiast.</p>
+        
+        <div class="resume-actions">
+            <button id="viewBtn">View Resume</button>
+            <a href="resume.pdf" download="Alex_Resume.pdf" class="download-link">Download PDF</a>
+        </div>
+    </section>
+
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe src="resume.pdf" width="100%" height="500px"></iframe>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
